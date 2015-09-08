@@ -1,11 +1,6 @@
----
-title: "Peer Assessment 1"
-author: "Steve Rust"
-date: "September 8, 2015"
-output: 
-  html_document: 
-    keep_md: yes
----
+# Peer Assessment 1
+Steve Rust  
+September 8, 2015  
 
 #Introduction
 
@@ -15,33 +10,21 @@ This report documents the analysis of the Activity Monitoring dataset.
 
 The first step after setting the working directory was to load the data.
 
-```{r, echo=FALSE}
 
-#Set the working directory
-#setwd("C:/Users/Steve/Documents/My Folders/Coursera/Reproducable Research/Peer Assessment 1")
 
-#################################################
-## Step A - Loading and preprocessing the data ##
-#################################################
 
-# Step A1 - Load the data
-```
-
-```{r}
+```r
 activity <- read.csv("activity.csv")
 ```
 
-```{r, echo=FALSE}
-#head(activity, n=10)
-```
+
 
 I then added a time variable to represent intervals well on a time scale and created a version of the original dataset for which records containing missing values for the ***steps*** variable were eliminated.
 
-```{r, echo=FALSE}
-# Step A2 - Prepare the data for analysis
-```
 
-```{r}
+
+
+```r
 hour <- floor(activity$interval / 100)
 minutes <- activity$interval - 100*hour
 fractional_hour <- (minutes + 2.5) / 60
@@ -50,101 +33,97 @@ activity$time <- hour + fractional_hour
 activity_nona <- activity[!is.na(activity$steps),]
 ```
 
-```{r, echo=FALSE}
-#head(activity$time, n=100)
-#head(activity_nona)
-```
+
 
 #What is mean total number of steps taken per day?
 
 Using the dataset without missing values, I created a new dataset containing the total number of steps by day and produced the following histogram for total number of daily steps.
 
-```{r, echo=FALSE}
-#################################################
-## Step B - Mean number of steps taken per day ##
-#################################################
 
-# Steps B1 & B2 - Calculate the total number of steps taken per day &
-#                 make a histogram of the total number of steps taken each day
-```
 
-```{r}
+
+```r
 total_steps <- setNames(aggregate(activity_nona$steps, by=list(Category=activity_nona$date),                             FUN=sum, na.rm=TRUE), c("Date", "total_steps"))
 hist(total_steps$total_steps, ylim=c(0,25), breaks=10, xlab="Total Steps Per Day",
      main="Distibution Over All Days")
 ```
 
-```{r, echo=FALSE}
-#head(total_steps)
-```
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
+
+
 
 The mean and median total number of steps per day, respectively, are as follows. 
 
-```{r, echo=FALSE}
-# Step B3 - Calculate the mean and median of the total number of steps taken per day
+
+
+
+```r
+mean(total_steps$total_steps, na.rm=TRUE)
 ```
 
-```{r}
-mean(total_steps$total_steps, na.rm=TRUE)
+```
+## [1] 10766.19
+```
+
+```r
 median(total_steps$total_steps, na.rm=TRUE)
+```
+
+```
+## [1] 10765
 ```
 
 #What is the average daily activity pattern?
 
 Going back to the original dataset, I created a new dataset containing the average number of steps by 5-minute interval and produced the following plot of average number of steps vs. time of day.
 
-```{r, echo=FALSE}
-#############################################
-## Step C - Average daily activity pattern ##
-#############################################
 
-# Step C1 - Make a time series plot of average number of steps taken vs. 5-min interval
-```
 
-```{r}
+
+```r
 average_steps <- setNames(aggregate(activity$steps, by=list(time=activity$time), FUN=mean,                                 na.rm=TRUE), c("time", "average_steps"))
 plot(average_steps$time, average_steps$average_steps, type="l",
      ylab="Average Steps Per 5-Minute Interval", xlab="Time of Day (Decimal Hours)")
 ```
 
-```{r, echo=FALSE}
-#head(average_steps)
-```
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png) 
+
+
 
 The time interval with the largest average number of steps occurs at the following time in units of decimal hours.
 
-```{r, echo=FALSE}
-# Step C2 - Identify the interval which contains the maximum average number of steps
+
+
+
+```r
+average_steps$time[which.max(average_steps$average_steps)]
 ```
 
-```{r}
-average_steps$time[which.max(average_steps$average_steps)]
+```
+## [1] 8.625
 ```
 
 #Imputing missing values
 
 There are a number of missing values for the ***steps*** variable.  The number of time intervals for which the ***steps*** variable is missing is reported below.
 
-```{r, echo=FALSE}
-######################################
-## Step D - Imputing missing values ##
-######################################
 
-# Step D1 - Count the total number of intervals with missing values
+
+
+```r
+sum(is.na(activity$steps))
 ```
 
-```{r}
-sum(is.na(activity$steps))
+```
+## [1] 2304
 ```
 
 Before performing additional analyses, I replaced each missing value for the ***steps*** variable with the interval average previously computed.
 
-```{r, echo=FALSE}
-# Step D2 - NULL
-# Step D3 - Replace missing values with interval averages
-```
 
-```{r}
+
+
+```r
 #Merge interval averages into data.frame and sort
 activity2 <- merge(activity, average_steps, by="time")
 activity2 <- activity2[order(activity2$date, activity2$interval),]
@@ -155,52 +134,53 @@ activity2$raw_steps <- activity2$steps
 activity2$steps[is.na(activity2$steps)] <- activity2$average_steps[is.na(activity2$steps)]
 ```
 
-```{r, echo=FALSE}
-#head(activity2)
-#head(activity2, n=300)
-```
+
 
 The following figure is a new histogram for total number of daily steps.  Notice that the imputation of missing values has increased the frequency of the most frequent interval by 8 observations.
 
-```{r, echo=FALSE}
-# Step D4.1 - Make a histogram of the total number of steps taken each day
-```
 
-```{r}
+
+
+```r
 total_steps2 <- setNames(aggregate(activity2$steps, by=list(Category=activity2$date), FUN=sum, na.rm=TRUE),
                          c("Date", "total_steps2"))
 hist(total_steps2$total_steps2, ylim=c(0,25), breaks=10, xlab="Total Steps Per Day",
      main="Distibution Over All Days")
 ```
 
-```{r, echo=FALSE}
-#head(total_steps2)
-```
+![](PA1_template_files/figure-html/unnamed-chunk-23-1.png) 
+
+
 
 New values of the mean and median total number of steps per day, respectively, are as follows.  Notice that the median is now equal to the mean because, essentially, 8 observations with that number of steps were added to the dataset.  
 
-```{r, echo=FALSE}
-# Step D4.2 - Calculate the mean and median of the total number of steps taken per day
+
+
+
+```r
+mean(total_steps2$total_steps2, na.rm=TRUE)
 ```
 
-```{r}
-mean(total_steps2$total_steps2, na.rm=TRUE)
+```
+## [1] 10766.19
+```
+
+```r
 median(total_steps2$total_steps2, na.rm=TRUE)
+```
+
+```
+## [1] 10766.19
 ```
 
 #Are there differences in activity patterns between weekdays and weekends?
 
 In order to compare weekday versus weekend activity patterns, a ***daytype*** variable was added to the dataset.  The variable takes either the value "weekday" or "weekend".
 
-```{r, echo=FALSE}
-#############################################################################
-## Step E - Differences in activity patterns between weekdays and weekends ##
-#############################################################################
 
-# Step E1 - Add a "weekday"/"weekend" factor variable
-```
 
-```{r}
+
+```r
 activity2$dayofweek <- weekdays(as.Date(activity2$date))
 for (i in 1:length(activity2$dayofweek)) {
     if (activity2$dayofweek[i] %in% c("Saturday","Sunday")) {activity2$daytype[i] <- "weekend"}
@@ -208,18 +188,14 @@ for (i in 1:length(activity2$dayofweek)) {
 }
 ```
 
-```{r, echo=FALSE}
-#table(activity2$daytype)
-```
+
 
 The following figure contains separate plots of average number of steps vs. time of day for "weekdays" and "weekends".  Note that the weekend activity pattern is much more uniform from 08:00 to 21:00 with activity diminishing slightly as the day progresses.  In contrast, "weekday" activity has peaks of higher activity at specific times (e.g., ~08:30, ~12:15, ~16:00, ~17.45, ~18:45) puncuated by periods of very low activity (< 50 steps per 5 minute period). 
 
-```{r, echo=FALSE}
-# Step E2 - Make a time series plot of average number of steps taken vs. 5-min interval with
-#           separate panels for "weekday" and "weekend"
-```
 
-```{r}
+
+
+```r
 average_steps2 <- setNames(aggregate(activity2$steps, by=list(time=activity2$time,                                          daytype=activity2$daytype), FUN=mean, na.rm=TRUE),
                            c("time", "daytype", "average_steps2"))
 library(ggplot2)
@@ -228,6 +204,6 @@ g + geom_line(aes(time,average_steps2)) + facet_grid(daytype ~ .) +
     labs(list(y="Average Steps Per 5-Minute Interval", x="Time of Day (Decimal Hours)"))
 ```
 
-```{r, echo=FALSE}
-#head(average_steps2)
-```
+![](PA1_template_files/figure-html/unnamed-chunk-31-1.png) 
+
+
